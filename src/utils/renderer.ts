@@ -288,8 +288,10 @@ export const getMouse = ({
   const getMousedown = (): Mouse['mousedown'] => {
     switch (mouseEvent.type) {
       case 'mousedown':
+      case 'pointerdown':
         return newPosition;
       case 'mousemove':
+      case 'pointermove':
         return lastMouse.mousedown;
       default:
         return null;

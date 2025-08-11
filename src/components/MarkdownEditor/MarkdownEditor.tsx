@@ -1,32 +1,71 @@
-import React, { useMemo } from 'react';
-import ReactQuill from 'react-quill';
+import React, { useEffect, useRef, useCallback } from 'react';
+import Quill from 'quill';
+import 'quill/dist/quill.snow.css';
 import { Box } from '@mui/material';
 
 interface Props {
-  value?: string;
-  onChange?: (value: string) => void;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
   readOnly?: boolean;
   height?: number;
   styles?: React.CSSProperties;
 }
 
-const tools = ['bold', 'italic', 'underline', 'strike', 'link'];
-
 export const MarkdownEditor = ({
   value,
   onChange,
-  readOnly,
+  placeholder,
+  readOnly = false,
   height = 120,
   styles
 }: Props) => {
-  const modules = useMemo(() => {
-    if (!readOnly)
-      return {
-        toolbar: tools
-      };
+  const editorRef = useRef<HTMLDivElement>(null);
+  const quillRef = useRef<Quill | null>(null);
+  const isUpdatingRef = useRef(false);
 
-    return { toolbar: false };
-  }, [readOnly]);
+  const initializeQuill = useCallback(() => {
+    if (!editorRef.current || quillRef.current) return;
+
+    const quill = new Quill(editorRef.current, {
+      theme: 'snow',
+      placeholder: readOnly ? undefined : placeholder || 'Enter text...',
+      readOnly,
+      modules: {
+        toolbar: readOnly
+          ? false
+          : [
+              ['bold', 'italic', 'underline'],
+              [{ list: 'ordered' }, { list: 'bullet' }],
+              ['link'],
+              ['clean']
+            ]
+      }
+    });
+
+    if (!readOnly) {
+      quill.on('text-change', () => {
+        if (!isUpdatingRef.current) {
+          const content = quill.root.innerHTML;
+          onChange(content);
+        }
+      });
+    }
+
+    quillRef.current = quill;
+  }, [onChange, placeholder, readOnly]);
+
+  useEffect(() => {
+    initializeQuill();
+  }, [initializeQuill]);
+
+  useEffect(() => {
+    if (quillRef.current && !isUpdatingRef.current) {
+      isUpdatingRef.current = true;
+      quillRef.current.root.innerHTML = value;
+      isUpdatingRef.current = false;
+    }
+  }, [value]);
 
   return (
     <Box
@@ -53,14 +92,7 @@ export const MarkdownEditor = ({
         }
       }}
     >
-      <ReactQuill
-        theme="snow"
-        value={value ?? ''}
-        readOnly={readOnly}
-        onChange={onChange}
-        formats={tools}
-        modules={modules}
-      />
+      <div ref={editorRef} />
     </Box>
   );
 };

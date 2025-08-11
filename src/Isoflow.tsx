@@ -21,7 +21,8 @@ const App = ({
   onModelUpdated,
   enableDebugTools = false,
   editorMode = 'EDITABLE',
-  renderer
+  renderer,
+  enableGlobalDragHandlers = true
 }: IsoflowProps) => {
   const uiStateActions = useUiStateStore((state) => {
     return state.actions;
@@ -44,7 +45,7 @@ const App = ({
 
   useEffect(() => {
     return () => {
-      setWindowCursor('default');
+      setWindowCursor('default', document.body);
     };
   }, []);
 
@@ -72,7 +73,7 @@ const App = ({
           transform: 'translateZ(0)'
         }}
       >
-        <Renderer {...renderer} />
+        <Renderer {...renderer} enableGlobalDragHandlers={enableGlobalDragHandlers} />
         <UiOverlay />
       </Box>
     </>

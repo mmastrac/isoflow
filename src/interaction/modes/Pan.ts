@@ -3,11 +3,11 @@ import { CoordsUtils, setWindowCursor } from 'src/utils';
 import { ModeActions } from 'src/types';
 
 export const Pan: ModeActions = {
-  entry: () => {
-    setWindowCursor('grab');
+  entry: (state, element) => {
+    setWindowCursor('grab', element);
   },
-  exit: () => {
-    setWindowCursor('default');
+  exit: (state, element) => {
+    setWindowCursor('default', element);
   },
   mousemove: ({ uiState }) => {
     if (uiState.mode.type !== 'PAN') return;
@@ -22,12 +22,12 @@ export const Pan: ModeActions = {
       uiState.actions.setScroll(newScroll);
     }
   },
-  mousedown: ({ uiState, isRendererInteraction }) => {
+  mousedown: ({ uiState, isRendererInteraction }, element) => {
     if (uiState.mode.type !== 'PAN' || !isRendererInteraction) return;
 
-    setWindowCursor('grabbing');
+    setWindowCursor('grabbing', element);
   },
-  mouseup: () => {
-    setWindowCursor('grab');
+  mouseup: (state, element) => {
+    setWindowCursor('grab', element);
   }
 };

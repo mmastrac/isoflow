@@ -9,11 +9,11 @@ import {
 import { ModeActions, Connector as ConnectorI } from 'src/types';
 
 export const Connector: ModeActions = {
-  entry: () => {
-    setWindowCursor('crosshair');
+  entry: (state, element) => {
+    setWindowCursor('crosshair', element);
   },
-  exit: () => {
-    setWindowCursor('default');
+  exit: (state, element) => {
+    setWindowCursor('default', element);
   },
   mousemove: ({ uiState, scene }) => {
     if (

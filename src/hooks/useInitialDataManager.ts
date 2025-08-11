@@ -16,7 +16,7 @@ import { modelSchema } from 'src/schemas/model';
 
 export const useInitialDataManager = () => {
   const [isReady, setIsReady] = useState(false);
-  const prevInitialData = useRef<InitialData>();
+  const prevInitialData = useRef<InitialData | undefined>(undefined);
   const model = useModelStore((state) => {
     return state;
   });
@@ -39,7 +39,7 @@ export const useInitialDataManager = () => {
       if (!validationResult.success) {
         // TODO: let's get better at reporting error messages here (starting with how we present them to users)
         // - not in console but in a modal
-        console.log(validationResult.error.errors);
+        console.log(validationResult.error.issues);
         window.alert('There is an error in your model.');
         return;
       }

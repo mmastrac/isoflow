@@ -38,8 +38,8 @@ export const getColorVariant = (
   }
 };
 
-export const setWindowCursor = (cursor: string) => {
-  window.document.body.style.cursor = cursor;
+export const setWindowCursor = (cursor: string, element: HTMLElement) => {
+  element.style.cursor = cursor;
 };
 
 export const toPx = (value: number | string) => {

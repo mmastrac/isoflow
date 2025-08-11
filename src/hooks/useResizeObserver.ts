@@ -1,43 +1,29 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Size } from 'src/types';
 
-export const useResizeObserver = (el?: HTMLElement | null) => {
-  const resizeObserverRef = useRef<ResizeObserver>();
+export const useResizeObserver = (element: HTMLElement | null | undefined) => {
   const [size, setSize] = useState<Size>({ width: 0, height: 0 });
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
-  const disconnect = useCallback(() => {
-    resizeObserverRef.current?.disconnect();
-  }, []);
+  useEffect(() => {
+    if (!element) return;
 
-  const observe = useCallback(
-    (element: HTMLElement) => {
-      disconnect();
-
-      resizeObserverRef.current = new ResizeObserver(() => {
-        setSize({
-          width: element.clientWidth,
-          height: element.clientHeight
-        });
+    const resizeObserver = new ResizeObserver((entries) => {
+      entries.forEach((entry) => {
+        const { width, height } = entry.contentRect;
+        setSize({ width, height });
       });
+    });
 
-      resizeObserverRef.current.observe(element);
-    },
-    [disconnect]
-  );
+    resizeObserver.observe(element);
+    resizeObserverRef.current = resizeObserver;
 
-  useEffect(() => {
     return () => {
-      disconnect();
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+      }
     };
-  }, [disconnect]);
+  }, [element]);
 
-  useEffect(() => {
-    if (el) observe(el);
-  }, [observe, el]);
-
-  return {
-    size,
-    disconnect,
-    observe
-  };
+  return { size };
 };
