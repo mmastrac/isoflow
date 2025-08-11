@@ -11,8 +11,8 @@ export const FrameLimitedDrag = () => {
       </Typography>
       <Typography variant="body1" sx={{ mb: 2 }}>
         This example shows Isoflow with drag interactions limited to the frame
-        itself. Try dragging outside the frame - it won&apos;t work! This is useful
-        for embedding in other pages.
+        itself. Try dragging outside the frame - it won&apos;t work! This is
+        useful for embedding in other pages.
       </Typography>
 
       <Paper

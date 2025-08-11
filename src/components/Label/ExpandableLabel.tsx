@@ -27,14 +27,18 @@ export const ExpandableLabel = ({
     const timer = setTimeout(() => {
       setContentRendered(true);
     }, 100);
-    return () => clearTimeout(timer);
+    return () => {
+      return clearTimeout(timer);
+    };
   }, []);
 
   const isContentTruncated = useMemo(() => {
     // Only show expansion icon if content actually overflows the container
     // Add a small buffer to account for padding/margins
     const actualContentHeight = contentRef.current?.scrollHeight || 0;
-    return !isExpanded && contentRendered && actualContentHeight > labelHeight + 5;
+    return (
+      !isExpanded && contentRendered && actualContentHeight > labelHeight + 5
+    );
   }, [isExpanded, contentRendered, labelHeight]);
 
   // Only show expansion button if content is actually truncated

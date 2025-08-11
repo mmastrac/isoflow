@@ -42,7 +42,9 @@ const getModeFunction = (mode: ModeActions, e: SlimMouseEvent) => {
   }
 };
 
-export const useInteractionManager = (enableGlobalDragHandlers: boolean = true) => {
+export const useInteractionManager = (
+  enableGlobalDragHandlers: boolean = true
+) => {
   const rendererRef = useRef<HTMLElement | null>(null);
   const reducerTypeRef = useRef<string | null>(null);
   const uiState = useUiStateStore((state) => {
@@ -53,8 +55,12 @@ export const useInteractionManager = (enableGlobalDragHandlers: boolean = true) 
   });
   const scene = useScene();
   const { size: rendererSize } = useResizeObserver(uiState.rendererEl);
-  const el = enableGlobalDragHandlers ? window : (rendererRef.current || uiState.rendererEl) as unknown as Window;
-  const elCursor = enableGlobalDragHandlers ? document.body : (rendererRef.current || uiState.rendererEl) as HTMLElement;
+  const el = enableGlobalDragHandlers
+    ? window
+    : ((rendererRef.current || uiState.rendererEl) as unknown as Window);
+  const elCursor = enableGlobalDragHandlers
+    ? document.body
+    : ((rendererRef.current || uiState.rendererEl) as HTMLElement);
 
   const onMouseEvent = useCallback(
     (e: SlimMouseEvent) => {
@@ -65,7 +71,9 @@ export const useInteractionManager = (enableGlobalDragHandlers: boolean = true) 
       }
       if (e.type === 'pointerup') {
         if (e.target instanceof HTMLElement) {
-          e.target.releasePointerCapture((e as unknown as PointerEvent).pointerId);
+          e.target.releasePointerCapture(
+            (e as unknown as PointerEvent).pointerId
+          );
         }
       }
 
@@ -138,31 +146,9 @@ export const useInteractionManager = (enableGlobalDragHandlers: boolean = true) 
     // Choose the element to attach event listeners to based on the enableGlobalDragHandlers setting
     if (!el) return;
 
-    const onTouchStart = (e: TouchEvent) => {
-      onMouseEvent({
-        ...e,
-        clientX: Math.floor(e.touches[0].clientX),
-        clientY: Math.floor(e.touches[0].clientY),
-        type: 'mousedown'
-      });
-    };
-    const onTouchMove = (e: TouchEvent) => {
-      onMouseEvent({
-        ...e,
-        clientX: Math.floor(e.touches[0].clientX),
-        clientY: Math.floor(e.touches[0].clientY),
-        type: 'mousemove'
-      });
-    };
-    const onTouchEnd = (e: TouchEvent) => {
-      onMouseEvent({
-        ...e,
-        clientX: 0,
-        clientY: 0,
-        type: 'mouseup'
-      });
-    };
     const onScroll = (e: WheelEvent) => {
+      e.preventDefault();
+
       if (e.deltaY > 0) {
         uiState.actions.decrementZoom();
       } else {
@@ -170,23 +156,17 @@ export const useInteractionManager = (enableGlobalDragHandlers: boolean = true) 
       }
     };
 
-    el.addEventListener('pointermove', onMouseEvent);
-    el.addEventListener('pointerdown', onMouseEvent);
-    el.addEventListener('pointerup', onMouseEvent);
-    el.addEventListener('contextmenu', onContextMenu);
-    // el.addEventListener('touchstart', onTouchStart);
-    // el.addEventListener('touchmove', onTouchMove);
-    // el.addEventListener('touchend', onTouchEnd);
-    uiState.rendererEl?.addEventListener('wheel', onScroll);
+    el.addEventListener('pointermove', onMouseEvent, { passive: false });
+    el.addEventListener('pointerdown', onMouseEvent, { passive: false });
+    el.addEventListener('pointerup', onMouseEvent, { passive: false });
+    el.addEventListener('contextmenu', onContextMenu, { passive: false });
+    uiState.rendererEl?.addEventListener('wheel', onScroll, { passive: false });
 
     return () => {
       el.removeEventListener('pointermove', onMouseEvent);
       el.removeEventListener('pointerdown', onMouseEvent);
       el.removeEventListener('pointerup', onMouseEvent);
       el.removeEventListener('contextmenu', onContextMenu);
-      // el.removeEventListener('touchstart', onTouchStart);
-      // el.removeEventListener('touchmove', onTouchMove);
-      // el.removeEventListener('touchend', onTouchEnd);
       uiState.rendererEl?.removeEventListener('wheel', onScroll);
     };
   }, [

@@ -25,7 +25,9 @@ const getAnchorOrdering = (
   view: View
 ) => {
   const anchorTile = getAnchorTile(anchor, view);
-  const index = connector.path.tiles.findIndex((pathTile) => {
+
+  // First try to find an exact match
+  let index = connector.path.tiles.findIndex((pathTile) => {
     const globalTile = connectorPathTileToGlobal(
       pathTile,
       connector.path.rectangle.from
@@ -33,10 +35,27 @@ const getAnchorOrdering = (
     return CoordsUtils.isEqual(globalTile, anchorTile);
   });
 
+  // If no exact match, find the closest tile
   if (index === -1) {
-    throw new Error(
-      `Could not calculate ordering index of anchor [anchorId: ${anchor.id}]`
-    );
+    let closestIndex = 0;
+    let closestDistance = Infinity;
+
+    connector.path.tiles.forEach((pathTile, i) => {
+      const globalTile = connectorPathTileToGlobal(
+        pathTile,
+        connector.path.rectangle.from
+      );
+      const distance =
+        Math.abs(globalTile.x - anchorTile.x) +
+        Math.abs(globalTile.y - anchorTile.y);
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = i;
+      }
+    });
+
+    index = closestIndex;
   }
 
   return index;
