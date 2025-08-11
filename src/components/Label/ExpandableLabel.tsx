@@ -8,28 +8,34 @@ type Props = Omit<LabelProps, 'maxHeight'> & {
   onToggleExpand?: (isExpanded: boolean) => void;
 };
 
-const STANDARD_LABEL_HEIGHT = 80;
-
 export const ExpandableLabel = ({
   children,
   onToggleExpand,
+  labelHeight = 80,
   ...rest
 }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const [contentRendered, setContentRendered] = useState(false);
 
   const containerMaxHeight = useMemo(() => {
-    return isExpanded ? undefined : STANDARD_LABEL_HEIGHT;
-  }, [isExpanded]);
+    return isExpanded ? undefined : labelHeight;
+  }, [isExpanded, labelHeight]);
+
+  useEffect(() => {
+    // Ensure content is rendered before checking scrollHeight
+    const timer = setTimeout(() => {
+      setContentRendered(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const isContentTruncated = useMemo(() => {
     // Only show expansion icon if content actually overflows the container
-    // Use scrollHeight to measure the actual content height
+    // Add a small buffer to account for padding/margins
     const actualContentHeight = contentRef.current?.scrollHeight || 0;
-    const truncated =
-      !isExpanded && actualContentHeight > STANDARD_LABEL_HEIGHT + 5;
-    return truncated;
-  }, [isExpanded]);
+    return !isExpanded && contentRendered && actualContentHeight > labelHeight + 5;
+  }, [isExpanded, contentRendered, labelHeight]);
 
   // Only show expansion button if content is actually truncated
   // or if we're currently expanded (to allow collapsing)
@@ -44,6 +50,7 @@ export const ExpandableLabel = ({
   return (
     <Label
       {...rest}
+      labelHeight={labelHeight}
       maxHeight={containerMaxHeight}
       maxWidth={isExpanded ? rest.maxWidth * 1.5 : rest.maxWidth}
     >

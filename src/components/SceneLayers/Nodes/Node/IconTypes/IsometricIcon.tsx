@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Box } from '@mui/material';
 import { PROJECTED_TILE_SIZE } from 'src/config';
 import { useResizeObserver } from 'src/hooks/useResizeObserver';
@@ -10,7 +10,15 @@ interface Props {
 
 export const IsometricIcon = ({ url, onImageLoaded }: Props) => {
   const ref = useRef<HTMLDivElement>(null);
-  const { size } = useResizeObserver(ref.current);
+  const { size, observe, disconnect } = useResizeObserver();
+
+  useEffect(() => {
+    if (!ref.current) return;
+
+    if (ref.current) observe(ref.current);
+
+    return disconnect;
+  }, [observe, disconnect]);
 
   return (
     <Box
