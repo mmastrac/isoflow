@@ -57,6 +57,10 @@ export const Renderer = ({
         width: '100%',
         height: '100%',
         zIndex: 0,
+        // Prevent touch scrolling on mobile
+        touchAction: 'none',
+        overscrollBehavior: 'none',
+        WebkitOverflowScrolling: 'auto',
         bgcolor: (theme) => {
           return backgroundColor ?? theme.customVars.customPalette.diagramBg;
         }
@@ -103,7 +107,11 @@ export const Renderer = ({
           left: 0,
           top: 0,
           width: '100%',
-          height: '100%'
+          height: '100%',
+          // Prevent touch scrolling on mobile
+          touchAction: 'none',
+          overscrollBehavior: 'none',
+          WebkitOverflowScrolling: 'auto'
         }}
       />
       <SceneLayer>

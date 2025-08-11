@@ -280,10 +280,19 @@ export const getMouse = ({
     })
   };
 
-  const newDelta: Mouse['delta'] = {
-    screen: CoordsUtils.subtract(newPosition.screen, lastMouse.position.screen),
-    tile: CoordsUtils.subtract(newPosition.tile, lastMouse.position.tile)
-  };
+  const newDelta: Mouse['delta'] =
+    mouseEvent.type === 'pointermove'
+      ? {
+          screen: CoordsUtils.subtract(
+            newPosition.screen,
+            lastMouse.position.screen
+          ),
+          tile: CoordsUtils.subtract(newPosition.tile, lastMouse.position.tile)
+        }
+      : {
+          screen: CoordsUtils.zero(),
+          tile: CoordsUtils.zero()
+        };
 
   const getMousedown = (): Mouse['mousedown'] => {
     switch (mouseEvent.type) {
