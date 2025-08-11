@@ -2,16 +2,22 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Size } from 'src/types';
 
 export const useResizeObserver = (el?: HTMLElement | null) => {
-  const resizeObserverRef = useRef<ResizeObserver>();
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [size, setSize] = useState<Size>({ width: 0, height: 0 });
 
   const disconnect = useCallback(() => {
-    resizeObserverRef.current?.disconnect();
+    if (resizeObserverRef.current) {
+      resizeObserverRef.current.disconnect();
+      resizeObserverRef.current = null;
+    }
   }, []);
 
   const observe = useCallback(
     (element: HTMLElement) => {
-      disconnect();
+      // Disconnect any existing observer
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+      }
 
       resizeObserverRef.current = new ResizeObserver(() => {
         setSize({
@@ -22,7 +28,7 @@ export const useResizeObserver = (el?: HTMLElement | null) => {
 
       resizeObserverRef.current.observe(element);
     },
-    [disconnect]
+    [] // Remove disconnect from dependencies to prevent recreation
   );
 
   useEffect(() => {

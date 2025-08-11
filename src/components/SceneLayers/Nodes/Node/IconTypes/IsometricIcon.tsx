@@ -9,13 +9,13 @@ interface Props {
 }
 
 export const IsometricIcon = ({ url, onImageLoaded }: Props) => {
-  const ref = useRef();
+  const ref = useRef<HTMLDivElement>(null);
   const { size, observe, disconnect } = useResizeObserver();
 
   useEffect(() => {
     if (!ref.current) return;
 
-    observe(ref.current);
+    if (ref.current) observe(ref.current);
 
     return disconnect;
   }, [observe, disconnect]);

@@ -29,19 +29,22 @@ const modes: { [k in string]: ModeActions } = {
 const getModeFunction = (mode: ModeActions, e: SlimMouseEvent) => {
   switch (e.type) {
     case 'mousemove':
+    case 'pointermove':
       return mode.mousemove;
     case 'mousedown':
+    case 'pointerdown':
       return mode.mousedown;
     case 'mouseup':
+    case 'pointerup':
       return mode.mouseup;
     default:
       return null;
   }
 };
 
-export const useInteractionManager = () => {
-  const rendererRef = useRef<HTMLElement>();
-  const reducerTypeRef = useRef<string>();
+export const useInteractionManager = (enableGlobalDragHandlers: boolean = true) => {
+  const rendererRef = useRef<HTMLElement | null>(null);
+  const reducerTypeRef = useRef<string | null>(null);
   const uiState = useUiStateStore((state) => {
     return state;
   });
@@ -50,14 +53,26 @@ export const useInteractionManager = () => {
   });
   const scene = useScene();
   const { size: rendererSize } = useResizeObserver(uiState.rendererEl);
+  const el = enableGlobalDragHandlers ? window : (rendererRef.current || uiState.rendererEl) as unknown as Window;
+  const elCursor = enableGlobalDragHandlers ? document.body : (rendererRef.current || uiState.rendererEl) as HTMLElement;
 
   const onMouseEvent = useCallback(
     (e: SlimMouseEvent) => {
+      if (e.type === 'pointerdown') {
+        if (e.target instanceof HTMLElement) {
+          e.target.setPointerCapture((e as unknown as PointerEvent).pointerId);
+        }
+      }
+      if (e.type === 'pointerup') {
+        if (e.target instanceof HTMLElement) {
+          e.target.releasePointerCapture((e as unknown as PointerEvent).pointerId);
+        }
+      }
+
       if (!rendererRef.current) return;
 
       const mode = modes[uiState.mode.type];
       const modeFunction = getModeFunction(mode, e);
-
       if (!modeFunction) return;
 
       const nextMouse = getMouse({
@@ -68,7 +83,6 @@ export const useInteractionManager = () => {
         mouseEvent: e,
         rendererSize
       });
-
       uiState.actions.setMouse(nextMouse);
 
       const baseState: State = {
@@ -84,17 +98,14 @@ export const useInteractionManager = () => {
         const prevReducer = reducerTypeRef.current
           ? modes[reducerTypeRef.current]
           : null;
-
         if (prevReducer && prevReducer.exit) {
-          prevReducer.exit(baseState);
+          prevReducer.exit(baseState, elCursor);
         }
-
         if (mode.entry) {
-          mode.entry(baseState);
+          mode.entry(baseState, elCursor);
         }
       }
-
-      modeFunction(baseState);
+      modeFunction(baseState, elCursor);
       reducerTypeRef.current = uiState.mode.type;
     },
     [model, scene, uiState, rendererSize]
@@ -124,7 +135,8 @@ export const useInteractionManager = () => {
   useEffect(() => {
     if (uiState.mode.type === 'INTERACTIONS_DISABLED') return;
 
-    const el = window;
+    // Choose the element to attach event listeners to based on the enableGlobalDragHandlers setting
+    if (!el) return;
 
     const onTouchStart = (e: TouchEvent) => {
       onMouseEvent({
@@ -134,7 +146,6 @@ export const useInteractionManager = () => {
         type: 'mousedown'
       });
     };
-
     const onTouchMove = (e: TouchEvent) => {
       onMouseEvent({
         ...e,
@@ -143,7 +154,6 @@ export const useInteractionManager = () => {
         type: 'mousemove'
       });
     };
-
     const onTouchEnd = (e: TouchEvent) => {
       onMouseEvent({
         ...e,
@@ -152,7 +162,6 @@ export const useInteractionManager = () => {
         type: 'mouseup'
       });
     };
-
     const onScroll = (e: WheelEvent) => {
       if (e.deltaY > 0) {
         uiState.actions.decrementZoom();
@@ -161,23 +170,23 @@ export const useInteractionManager = () => {
       }
     };
 
-    el.addEventListener('mousemove', onMouseEvent);
-    el.addEventListener('mousedown', onMouseEvent);
-    el.addEventListener('mouseup', onMouseEvent);
+    el.addEventListener('pointermove', onMouseEvent);
+    el.addEventListener('pointerdown', onMouseEvent);
+    el.addEventListener('pointerup', onMouseEvent);
     el.addEventListener('contextmenu', onContextMenu);
-    el.addEventListener('touchstart', onTouchStart);
-    el.addEventListener('touchmove', onTouchMove);
-    el.addEventListener('touchend', onTouchEnd);
+    // el.addEventListener('touchstart', onTouchStart);
+    // el.addEventListener('touchmove', onTouchMove);
+    // el.addEventListener('touchend', onTouchEnd);
     uiState.rendererEl?.addEventListener('wheel', onScroll);
 
     return () => {
-      el.removeEventListener('mousemove', onMouseEvent);
-      el.removeEventListener('mousedown', onMouseEvent);
-      el.removeEventListener('mouseup', onMouseEvent);
+      el.removeEventListener('pointermove', onMouseEvent);
+      el.removeEventListener('pointerdown', onMouseEvent);
+      el.removeEventListener('pointerup', onMouseEvent);
       el.removeEventListener('contextmenu', onContextMenu);
-      el.removeEventListener('touchstart', onTouchStart);
-      el.removeEventListener('touchmove', onTouchMove);
-      el.removeEventListener('touchend', onTouchEnd);
+      // el.removeEventListener('touchstart', onTouchStart);
+      // el.removeEventListener('touchmove', onTouchMove);
+      // el.removeEventListener('touchend', onTouchEnd);
       uiState.rendererEl?.removeEventListener('wheel', onScroll);
     };
   }, [
@@ -186,7 +195,8 @@ export const useInteractionManager = () => {
     uiState.mode.type,
     onContextMenu,
     uiState.actions,
-    uiState.rendererEl
+    uiState.rendererEl,
+    enableGlobalDragHandlers
   ]);
 
   const setInteractionsElement = useCallback((element: HTMLElement) => {

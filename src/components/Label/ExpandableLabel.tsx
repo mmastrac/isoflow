@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Box } from '@mui/material';
-import { useResizeObserver } from 'src/hooks/useResizeObserver';
 import { Gradient } from 'src/components/Gradient/Gradient';
 import { ExpandButton } from './ExpandButton';
 import { Label, Props as LabelProps } from './Label';
@@ -9,30 +8,40 @@ type Props = Omit<LabelProps, 'maxHeight'> & {
   onToggleExpand?: (isExpanded: boolean) => void;
 };
 
-const STANDARD_LABEL_HEIGHT = 80;
-
 export const ExpandableLabel = ({
   children,
   onToggleExpand,
+  labelHeight = 80,
   ...rest
 }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const contentRef = useRef<HTMLDivElement>();
-  const { observe, size: contentSize } = useResizeObserver();
-
-  useEffect(() => {
-    if (!contentRef.current) return;
-
-    observe(contentRef.current);
-  }, [observe]);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [contentRendered, setContentRendered] = useState(false);
 
   const containerMaxHeight = useMemo(() => {
-    return isExpanded ? undefined : STANDARD_LABEL_HEIGHT;
-  }, [isExpanded]);
+    return isExpanded ? undefined : labelHeight;
+  }, [isExpanded, labelHeight]);
+
+  useEffect(() => {
+    // Ensure content is rendered before checking scrollHeight
+    const timer = setTimeout(() => {
+      setContentRendered(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const isContentTruncated = useMemo(() => {
-    return !isExpanded && contentSize.height >= STANDARD_LABEL_HEIGHT - 10;
-  }, [isExpanded, contentSize.height]);
+    // Only show expansion icon if content actually overflows the container
+    // Add a small buffer to account for padding/margins
+    const actualContentHeight = contentRef.current?.scrollHeight || 0;
+    return !isExpanded && contentRendered && actualContentHeight > labelHeight + 5;
+  }, [isExpanded, contentRendered, labelHeight]);
+
+  // Only show expansion button if content is actually truncated
+  // or if we're currently expanded (to allow collapsing)
+  const shouldShowExpandButton = useMemo(() => {
+    return isContentTruncated || isExpanded;
+  }, [isContentTruncated, isExpanded]);
 
   useEffect(() => {
     contentRef.current?.scrollTo({ top: 0 });
@@ -41,6 +50,7 @@ export const ExpandableLabel = ({
   return (
     <Label
       {...rest}
+      labelHeight={labelHeight}
       maxHeight={containerMaxHeight}
       maxWidth={isExpanded ? rest.maxWidth * 1.5 : rest.maxWidth}
     >
@@ -71,7 +81,7 @@ export const ExpandableLabel = ({
         )}
       </Box>
 
-      {((!isExpanded && isContentTruncated) || isExpanded) && (
+      {shouldShowExpandButton && (
         <ExpandButton
           sx={{
             position: 'absolute',

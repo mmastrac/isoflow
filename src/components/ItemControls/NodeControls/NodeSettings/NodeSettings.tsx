@@ -39,7 +39,7 @@ export const NodeSettings = ({
       </Section>
       <Section title="Description">
         <MarkdownEditor
-          value={modelItem.description}
+          value={modelItem.description || ''}
           onChange={(text) => {
             if (modelItem.description !== text)
               onModelItemUpdated({ description: text });

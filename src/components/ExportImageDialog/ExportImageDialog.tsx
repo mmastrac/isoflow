@@ -39,8 +39,8 @@ interface Props {
 }
 
 export const ExportImageDialog = ({ onClose, quality = 1.5 }: Props) => {
-  const containerRef = useRef<HTMLDivElement>();
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const currentView = useUiStateStore((state) => {
     return state.view;
   });
@@ -68,14 +68,13 @@ export const ExportImageDialog = ({ onClose, quality = 1.5 }: Props) => {
   const exportImage = useCallback(async () => {
     if (!containerRef.current) return;
 
-    clearTimeout(debounceRef.current);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       exportAsImage(containerRef.current as HTMLDivElement)
         .then((data) => {
           return setImageData(data);
         })
-        .catch((err) => {
-          console.log(err);
+        .catch(() => {
           setExportError(true);
         });
     }, 2000);

@@ -1,7 +1,5 @@
 import React from 'react';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
+import { Grid, Typography } from '@mui/material';
 import { Section } from './Section';
 
 interface Props {
@@ -12,12 +10,10 @@ export const Header = ({ title }: Props) => {
   return (
     <Section sx={{ py: 3 }}>
       <Grid container spacing={2}>
-        <Grid item xs={10}>
-          <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-            <Typography variant="body2" color="text.secondary">
-              {title}
-            </Typography>
-          </Box>
+        <Grid size={10}>
+          <Typography variant="h6" fontWeight={600}>
+            {title}
+          </Typography>
         </Grid>
       </Grid>
     </Section>

@@ -2,11 +2,11 @@ import { setWindowCursor } from 'src/utils';
 import { ModeActions } from 'src/types';
 
 export const TextBox: ModeActions = {
-  entry: () => {
-    setWindowCursor('crosshair');
+  entry: (state, element) => {
+    setWindowCursor('crosshair', element);
   },
-  exit: () => {
-    setWindowCursor('default');
+  exit: (state, element) => {
+    setWindowCursor('default', element);
   },
   mousemove: ({ uiState, scene }) => {
     if (uiState.mode.type !== 'TEXTBOX' || !uiState.mode.id) return;

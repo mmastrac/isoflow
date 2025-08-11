@@ -11,11 +11,15 @@ export interface State {
 }
 
 export type ModeActionsAction = (state: State) => void;
+export type ModeActionsActionWithElement = (
+  state: State,
+  element: HTMLElement
+) => void;
 
 export type ModeActions = {
-  entry?: ModeActionsAction;
-  exit?: ModeActionsAction;
-  mousemove?: ModeActionsAction;
-  mousedown?: ModeActionsAction;
-  mouseup?: ModeActionsAction;
+  entry?: ModeActionsActionWithElement;
+  exit?: ModeActionsActionWithElement;
+  mousemove?: ModeActionsActionWithElement;
+  mousedown?: ModeActionsActionWithElement;
+  mouseup?: ModeActionsActionWithElement;
 };

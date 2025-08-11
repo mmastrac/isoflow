@@ -3,11 +3,11 @@ import { produce } from 'immer';
 import { generateId, hasMovedTile, setWindowCursor } from 'src/utils';
 
 export const DrawRectangle: ModeActions = {
-  entry: () => {
-    setWindowCursor('crosshair');
+  entry: (state, element) => {
+    setWindowCursor('crosshair', element);
   },
-  exit: () => {
-    setWindowCursor('default');
+  exit: (state, element) => {
+    setWindowCursor('default', element);
   },
   mousemove: ({ uiState, scene }) => {
     if (

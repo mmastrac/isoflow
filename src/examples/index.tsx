@@ -3,11 +3,13 @@ import { Box, Select, MenuItem, useTheme } from '@mui/material';
 import { BasicEditor } from './BasicEditor/BasicEditor';
 import { DebugTools } from './DebugTools/DebugTools';
 import { ReadonlyMode } from './ReadonlyMode/ReadonlyMode';
+import { FrameLimitedDrag } from './FrameLimitedDrag/FrameLimitedDrag';
 
 const examples = [
   { name: 'Basic editor', component: BasicEditor },
   { name: 'Debug tools', component: DebugTools },
-  { name: 'Read-only mode', component: ReadonlyMode }
+  { name: 'Read-only mode', component: ReadonlyMode },
+  { name: 'Frame limited drag', component: FrameLimitedDrag }
 ];
 
 export const Examples = () => {

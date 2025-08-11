@@ -68,7 +68,11 @@ export const Node = ({ node, order }: Props) => {
                 )}
                 {modelItem.description &&
                   modelItem.description !== MARKDOWN_EMPTY_VALUE && (
-                    <MarkdownEditor value={modelItem.description} readOnly />
+                    <MarkdownEditor
+                      value={modelItem.description || ''}
+                      onChange={() => {}}
+                      readOnly
+                    />
                   )}
               </Stack>
             </ExpandableLabel>
